@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Plus, Search, UserCheck, UserX, Trash2 } from 'lucide-react'
-import { createIntern, deleteIntern } from '@/actions/interns'
+import { Plus, Search, UserCheck, UserX, Trash2, Edit2 } from 'lucide-react'
+import { createIntern, deleteIntern, updateIntern } from '@/actions/interns'
 
 interface InternRow {
   id: string
@@ -27,6 +27,10 @@ export default function AdminInternsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({ name: '', email: '', skills: '', college: '', phone: '' })
+  
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editIntern, setEditIntern] = useState<{ id: string, userId: string } | null>(null)
+  const [editForm, setEditForm] = useState({ name: '', skills: '', college: '', phone: '' })
 
   const load = async () => {
     const { data } = await supabase
@@ -65,7 +69,7 @@ export default function AdminInternsPage() {
     const result = await createIntern({
       name: form.name,
       email: form.email,
-      password: 'welcome123',
+      password: form.email,
       domain: '',
       skills: form.skills.split(',').map(s => s.trim()).filter(Boolean),
       college: form.college,
@@ -85,8 +89,47 @@ export default function AdminInternsPage() {
   }
 
   const handleDelete = async (id: string, userId: string) => {
-    await deleteIntern(userId)
+    if (!confirm('Are you sure you want to delete this intern? This will also remove all their associated data.')) return;
+    await deleteIntern(userId, id)
     load()
+  }
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editIntern) return
+
+    setLoading(true)
+    setError('')
+
+    const result = await updateIntern(editIntern.userId, editIntern.id, {
+      name: editForm.name,
+      skills: editForm.skills.split(',').map(s => s.trim()).filter(Boolean),
+      college: editForm.college,
+      phone: editForm.phone,
+    })
+
+    if (!result.success) {
+      setError(result.error ?? 'Failed to update intern')
+      setLoading(false)
+      return
+    }
+
+    setShowEditModal(false)
+    setEditIntern(null)
+    setLoading(false)
+    load()
+  }
+
+  const openEditModal = (intern: InternRow) => {
+    setEditIntern({ id: intern.id, userId: intern.user_id })
+    setEditForm({
+      name: intern.full_name,
+      skills: intern.skills.join(', '),
+      college: intern.college || '',
+      phone: intern.phone || ''
+    })
+    setError('')
+    setShowEditModal(true)
   }
 
   const toggleStatus = async (id: string, current: string) => {
@@ -145,6 +188,7 @@ export default function AdminInternsPage() {
                 <td className="px-3 py-3"><span className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full w-fit ${intern.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{intern.status === 'active' ? <UserCheck size={12} /> : <UserX size={12} />}{intern.status}</span></td>
                 <td className="px-3 py-3 text-right"><div className="flex justify-end gap-1">
                   <button onClick={() => toggleStatus(intern.id, intern.status)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-amber-600">{intern.status === 'active' ? <UserX size={15} /> : <UserCheck size={15} />}</button>
+                  <button onClick={() => openEditModal(intern)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-indigo-600"><Edit2 size={15} /></button>
                   <button onClick={() => handleDelete(intern.id, intern.user_id)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-red-600"><Trash2 size={15} /></button>
                 </div></td>
               </tr>
@@ -172,11 +216,39 @@ export default function AdminInternsPage() {
               </div>
               <div><label className="block text-sm font-medium text-slate-700 mb-1">Skills (comma-separated)</label>
                 <input value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} placeholder="e.g. React, TypeScript, Node.js" className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <p className="text-xs text-slate-400">Default password: <strong>welcome123</strong></p>
+              <p className="text-xs text-slate-400">Default password: <strong>their email address</strong></p>
               {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => { setShowModal(false); setError('') }} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200">Cancel</button>
                 <button type="submit" disabled={loading} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50">{loading ? 'Creating...' : 'Create Intern'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => { setShowEditModal(false); setError('') }} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-6">
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">Edit Intern</h2>
+            <form onSubmit={handleUpdate} className="space-y-4">
+              <div><label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} required className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-sm font-medium text-slate-700 mb-1">College</label>
+                  <input value={editForm.college} onChange={(e) => setEditForm({ ...editForm, college: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+                <div><label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                  <input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+              </div>
+              <div><label className="block text-sm font-medium text-slate-700 mb-1">Skills (comma-separated)</label>
+                <input value={editForm.skills} onChange={(e) => setEditForm({ ...editForm, skills: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+              
+              {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => { setShowEditModal(false); setError('') }} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200">Cancel</button>
+                <button type="submit" disabled={loading} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50">{loading ? 'Saving...' : 'Save Changes'}</button>
               </div>
             </form>
           </div>

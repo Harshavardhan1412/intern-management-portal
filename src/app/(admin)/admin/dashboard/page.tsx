@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { Users, ClipboardCheck, CheckCircle, FolderKanban, ArrowRight } from 'lucide-react'
+import { Users, ClipboardCheck, CheckCircle, FolderKanban, ArrowRight, Bell, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { sendDeadlineReminders } from '@/actions/reminders'
 
 export default function AdminDashboard() {
   const { user } = useAuth()
   const [stats, setStats] = useState({ interns: 0, attendance: 0, tasks: 0, projects: 0 })
+  const [reminding, setReminding] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -20,11 +22,37 @@ export default function AdminDashboard() {
     load()
   }, [])
 
+  const handleSendReminders = async () => {
+    setReminding(true)
+    try {
+      const result = await sendDeadlineReminders()
+      if (result.success) {
+        alert(`Deadline reminders sent successfully!\n\n${result.logs.join('\n')}`)
+      } else {
+        alert(`Failed to send reminders: ${result.error}`)
+      }
+    } catch (err: any) {
+      alert(`An unexpected error occurred: ${err.message}`)
+    } finally {
+      setReminding(false)
+    }
+  }
+
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-6">
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 className="text-xl font-bold text-slate-900">Admin Dashboard</h2>
-        <p className="text-sm text-slate-500 mt-1">Platform overview at a glance.</p>
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">Admin Dashboard</h2>
+          <p className="text-sm text-slate-500 mt-1">Platform overview at a glance.</p>
+        </div>
+        <button
+          onClick={handleSendReminders}
+          disabled={reminding}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-semibold rounded-xl transition duration-200 shadow-sm hover:shadow self-start sm:self-auto"
+        >
+          {reminding ? <Loader2 size={16} className="animate-spin" /> : <Bell size={16} />}
+          Trigger Deadline Reminders
+        </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

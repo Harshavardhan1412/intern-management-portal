@@ -52,6 +52,9 @@ export interface AttendanceRecord {
   correction_requested: boolean
   correction_reason: string | null
   admin_note: string | null
+  total_hours?: number | null
+  tasks_submitted?: number
+  is_late?: boolean
 }
 
 export interface Task {

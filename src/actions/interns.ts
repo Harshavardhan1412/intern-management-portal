@@ -17,7 +17,7 @@ export async function createIntern(form: {
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
@@ -28,7 +28,18 @@ export async function createIntern(form: {
     }
   )
 
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+  const adminAuthClient = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        getAll() { return [] },
+        setAll() {}
+      }
+    }
+  )
+
+  const { data: authData, error: authError } = await adminAuthClient.auth.admin.createUser({
     email: form.email,
     password: form.password,
     email_confirm: true,
@@ -56,23 +67,51 @@ export async function createIntern(form: {
   return { success: true, userId: authData.user.id }
 }
 
-export async function deleteIntern(userId: string) {
-  const cookieStore = await cookies()
-
-  const supabase = createServerClient(
+export async function updateIntern(userId: string, internId: string, form: {
+  name: string
+  skills: string[]
+  college: string
+  phone: string
+}) {
+  const adminAuthClient = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll() },
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
-        },
-      },
-    }
+    { cookies: { getAll() { return [] }, setAll() {} } }
   )
 
-  await supabase.from('interns').delete().eq('user_id', userId)
-  const { error } = await supabase.auth.admin.deleteUser(userId)
+  await adminAuthClient.auth.admin.updateUserById(userId, {
+    user_metadata: { full_name: form.name }
+  })
+  
+  await adminAuthClient.from('users').update({ full_name: form.name }).eq('id', userId)
+
+  const { error } = await adminAuthClient.from('interns').update({
+    skills: form.skills,
+    college: form.college || null,
+    phone: form.phone || null,
+  }).eq('id', internId)
+
+  return { success: !error, error: error?.message }
+}
+
+export async function deleteIntern(userId: string, internId: string) {
+  const adminAuthClient = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { cookies: { getAll() { return [] }, setAll() {} } }
+  )
+
+  // Cascade delete manually since RLS blocks it and schema lacks ON DELETE CASCADE
+  await adminAuthClient.from('leave_requests').delete().eq('intern_id', internId)
+  await adminAuthClient.from('attendance').delete().eq('intern_id', internId)
+  await adminAuthClient.from('evaluations').delete().eq('intern_id', internId)
+  await adminAuthClient.from('tasks').delete().eq('assigned_to', internId)
+  await adminAuthClient.from('project_members').delete().eq('intern_id', internId)
+  await adminAuthClient.from('announcement_reads').delete().eq('intern_id', internId)
+  
+  await adminAuthClient.from('interns').delete().eq('id', internId)
+  await adminAuthClient.from('users').delete().eq('id', userId)
+  const { error } = await adminAuthClient.auth.admin.deleteUser(userId)
+  
   return { success: !error, error: error?.message }
 }

@@ -2,8 +2,8 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Bell } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
+import NotificationsDropdown from './NotificationsDropdown'
 
 const titles: Record<string, { title: string; subtitle: string }> = {
   '/dashboard': { title: 'Dashboard', subtitle: 'Overview of your activities' },
@@ -45,10 +45,7 @@ export default function Topbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="relative p-2 rounded-lg hover:bg-slate-100 transition-colors">
-            <Bell size={20} className="text-slate-600" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-          </button>
+          <NotificationsDropdown />
           <Link
             href="/profile"
             className="flex items-center gap-3 pl-4 border-l hover:bg-slate-50 -mr-2 pr-2 py-1 rounded-lg transition-colors"

@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
   LayoutDashboard, Users, ClipboardCheck, ListChecks, FolderKanban,
-  UserCircle2, Star, Megaphone, BarChart3, LogOut,
+  UserCircle2, Star, Megaphone, BarChart3, LogOut, CalendarOff
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 
@@ -12,6 +12,7 @@ const navItems = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
   { label: 'Interns', href: '/admin/interns', icon: <Users size={20} /> },
   { label: 'Attendance', href: '/admin/attendance', icon: <ClipboardCheck size={20} /> },
+  { label: 'Leave Requests', href: '/admin/leave-requests', icon: <CalendarOff size={20} /> },
   { label: 'Tasks', href: '/admin/tasks', icon: <ListChecks size={20} /> },
   { label: 'Projects', href: '/admin/projects', icon: <FolderKanban size={20} /> },
   { label: 'Groups', href: '/admin/groups', icon: <UserCircle2 size={20} /> },

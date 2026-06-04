@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { Plus, Megaphone, User, Calendar } from 'lucide-react'
+import { broadcastAnnouncementNotification } from '@/actions/notifications'
 
 export default function DirectorAnnouncements() {
   const { user } = useAuth()
@@ -24,13 +25,18 @@ export default function DirectorAnnouncements() {
     e.preventDefault()
     if (!user) return
     setSending(true)
-    await supabase.from('announcements').insert({
+    const { data: newAnno } = await supabase.from('announcements').insert({
       title: form.title,
       body: form.body,
       created_by: user.id,
       target_audience: 'all',
       published_at: new Date().toISOString(),
-    })
+    }).select().single()
+
+    if (newAnno) {
+      await broadcastAnnouncementNotification(form.title, form.body, newAnno.id)
+    }
+
     setForm({ title: '', body: '' })
     setShowModal(false)
     setSending(false)

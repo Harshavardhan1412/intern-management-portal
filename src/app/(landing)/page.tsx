@@ -4,9 +4,9 @@ import Link from 'next/link'
 import { Shield, Users, Building, ArrowRight, GraduationCap, Award, Target, Mail, MapPin } from 'lucide-react'
 
 const loginRoles = [
-  { role: 'admin', label: 'Admin', icon: <Shield size={20} />, href: '/login', desc: 'Full system access — manage interns, tasks, evaluations' },
-  { role: 'director', label: 'Director', icon: <Building size={20} />, href: '/login', desc: 'Projects & oversight — add projects, approve leaves' },
-  { role: 'intern', label: 'Intern', icon: <Users size={20} />, href: '/login', desc: 'Daily workspace — tasks, attendance, leave, files' },
+  { role: 'admin', label: 'Admin', icon: <Shield size={20} />, href: '/login?role=admin', desc: 'Full system access — manage interns, tasks, evaluations' },
+  { role: 'director', label: 'Director', icon: <Building size={20} />, href: '/login?role=director', desc: 'Projects & oversight — add projects, approve leaves' },
+  { role: 'intern', label: 'Intern', icon: <Users size={20} />, href: '/login?role=intern', desc: 'Daily workspace — tasks, attendance, leave, files' },
 ]
 
 const stories = [
@@ -28,8 +28,8 @@ export default function LandingPage() {
       <header className="px-6 py-4 border-b" style={{ backgroundColor: '#0F172A', borderColor: '#1E293B' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white text-sm" style={{ backgroundColor: '#14B8A6' }}>I</div>
-            <span className="font-bold text-xl tracking-tight text-white">incuxAI</span>
+            <img src="/incuxai-logo.png" alt="incuXai Logo" className="rounded-lg object-cover" style={{ width: 36, height: 36 }} />
+            <span className="font-bold text-xl tracking-tight text-white">incuXai</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm font-medium text-white px-5 py-2 rounded-lg transition-all hover:opacity-90" style={{ backgroundColor: '#14B8A6' }}>Sign In</Link>
@@ -46,7 +46,7 @@ export default function LandingPage() {
             Intern Management Platform v1.0
           </div>
           <h1 className="text-6xl sm:text-7xl lg:text-8xl font-bold leading-none tracking-tight text-white mb-6">
-            incuxAI
+            incuXai
           </h1>
           <p className="text-lg sm:text-xl max-w-2xl mx-auto mb-10" style={{ color: '#94A3B8' }}>
             From onboarding to evaluation — a centralized platform for managing the full lifecycle of interns.
@@ -81,9 +81,9 @@ export default function LandingPage() {
       <section className="py-20 px-6" style={{ backgroundColor: '#F8FAFC' }}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: '#0F172A' }}>About incuxAI</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: '#0F172A' }}>About incuXai</h2>
             <p className="text-lg max-w-3xl mx-auto" style={{ color: '#64748B' }}>
-              incuxAI bridges the gap between academic learning and industry experience. Our structured intern
+              incuXai bridges the gap between academic learning and industry experience. Our structured intern
               management platform ensures every intern gets hands-on project exposure, continuous mentorship,
               and clear performance tracking.
             </p>
@@ -146,8 +146,8 @@ export default function LandingPage() {
           <div className="grid sm:grid-cols-4 gap-8 mb-10">
             <div className="sm:col-span-2">
               <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white text-xs" style={{ backgroundColor: '#14B8A6' }}>I</div>
-                <span className="font-bold text-lg text-white">incuxAI</span>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white text-xs" style={{ backgroundColor: '#14B8A6' }}><img src="/incuxai-logo.png"></img></div>
+                <span className="font-bold text-lg text-white">incuXai</span>
               </div>
               <p className="text-sm max-w-md" style={{ color: '#94A3B8' }}>
                 Empowering the next generation of tech talent through structured internship programs, real-world projects, and continuous mentorship.
@@ -165,17 +165,17 @@ export default function LandingPage() {
             <div>
               <h4 className="text-sm font-semibold text-white mb-4">Connect</h4>
               <div className="space-y-2.5">
-                <a href="#" className="flex items-center gap-2 text-sm transition-colors hover:text-teal-500" style={{ color: '#94A3B8' }}>Twitter / X</a>
-                <a href="#" className="flex items-center gap-2 text-sm transition-colors hover:text-teal-500" style={{ color: '#94A3B8' }}>LinkedIn</a>
-                <a href="#" className="flex items-center gap-2 text-sm transition-colors hover:text-teal-500" style={{ color: '#94A3B8' }}>Instagram</a>
+                <a href="https://incuxai.com/" className="flex items-center gap-2 text-sm transition-colors hover:text-teal-500" style={{ color: '#94A3B8' }}>incuXai.com</a>
+                <a href="https://www.linkedin.com/company/incuxai" className="flex items-center gap-2 text-sm transition-colors hover:text-teal-500" style={{ color: '#94A3B8' }}>LinkedIn</a>
+                <a href="https://instagram.com/incuxai" className="flex items-center gap-2 text-sm transition-colors hover:text-teal-500" style={{ color: '#94A3B8' }}>Instagram</a>
               </div>
             </div>
           </div>
           <div className="pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-xs" style={{ borderColor: '#1E293B', color: '#64748B' }}>
-            <p>&copy; 2026 incuxAI. All rights reserved.</p>
+            <p>&copy; 2026 incuXai. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1"><Mail size={12} /> contact@incuxai.com</span>
-              <span className="flex items-center gap-1"><MapPin size={12} /> Bangalore, India</span>
+              <span className="flex items-center gap-1"><MapPin size={12} /> Guntur, India</span>
             </div>
           </div>
         </div>
